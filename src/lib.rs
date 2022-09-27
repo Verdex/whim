@@ -1,5 +1,5 @@
 
-trait Random { 
+pub trait Random { 
     type T;
 
     fn next(&mut self) -> Self::T;
@@ -58,7 +58,6 @@ impl Random for Pcg32Shift {
     fn next(&mut self) -> Self::T {
         self.state = self.state.wrapping_mul(A);
         let shift = (self.state >> 60) as u8;
-        println!("{}", 60 - (shift + 13));
         return (self.state >> (shift + 13)) as u32;
     }
     fn range(&mut self, start : Self::T, end : Self::T) -> Self::T {

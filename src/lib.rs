@@ -76,9 +76,51 @@ impl Random for Pcg32Shift {
 mod tests {
     use super::*;
 
+    use std::collections::HashMap;
+
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn lcg_60_seed_makes_state_odd() {
+        let r = Lcg60::seed(0);
+        assert!(r.state % 2 == 1);
+    }
+
+    #[test]
+    fn lcg_60_shift_range_hits_min_and_max() {
+        let mut r = Lcg60::new();
+        let mut numbers : HashMap<u64, usize> = HashMap::new();
+        for i in 5..=20 {
+            numbers.insert(i, 0);
+        }
+
+        for _ in 0..1_000 {
+            let n = r.range(5, 20);
+            let count = numbers.get_mut(&n).unwrap();
+            *count += 1;
+        }
+
+        assert!( numbers.into_values().all(|n| n != 0) );
+    }
+
+    #[test]
+    fn pcg_32_shift_seed_makes_state_odd() {
+        let r = Pcg32Shift::seed(0);
+        assert!(r.state % 2 == 1);
+    }
+
+    #[test]
+    fn pcg_32_shift_range_hits_min_and_max() {
+        let mut r = Pcg32Shift::new();
+        let mut numbers : HashMap<u32, usize> = HashMap::new();
+        for i in 5..=20 {
+            numbers.insert(i, 0);
+        }
+
+        for _ in 0..1_000 {
+            let n = r.range(5, 20);
+            let count = numbers.get_mut(&n).unwrap();
+            *count += 1;
+        }
+
+        assert!( numbers.into_values().all(|n| n != 0) );
     }
 }

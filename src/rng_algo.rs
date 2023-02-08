@@ -1,5 +1,5 @@
 
-use std::ops::Range;
+use std::ops::{Bound, RangeBounds};
 
 use crate::random::*;
 
@@ -24,8 +24,10 @@ impl RandomU64 for Lcg60 {
         self.state = self.state.wrapping_mul(A);
         return self.state >> 4;
     }
-    fn range(&mut self, range : Range<u64>) -> u64 {
-        (self.ratio() * (range.end + 1 - range.start) as f64 + range.start as f64).floor() as u64 
+    fn range<R:RangeBounds<u64>>(&mut self, range : R) -> u64 {
+        let start = to_start_u64(range.start_bound()) as f64;
+        let end = to_end_u64(range.end_bound()) as f64;
+        (self.ratio() * (end + 1.0 - start) + start).floor() as u64 
     }
     fn ratio(&mut self) -> f64 {
         let a = self.next();
@@ -54,8 +56,10 @@ impl RandomU32 for Pcg32Shift {
         let shift = (self.state >> 60) as u8;
         return (self.state >> (shift + 13)) as u32;
     }
-    fn range(&mut self, range : Range<u32>) -> u32 {
-        (self.ratio() * (range.end + 1 - range.start) as f64 + range.start as f64).floor() as u32 
+    fn range<R:RangeBounds<u32>>(&mut self, range : R) -> u32 {
+        let start = to_start_u32(range.start_bound()) as f64;
+        let end = to_end_u32(range.end_bound()) as f64;
+        (self.ratio() * (end + 1.0 - start) + start).floor() as u32 
     }
     fn ratio(&mut self) -> f64 {
         let a = self.next();
@@ -64,3 +68,35 @@ impl RandomU32 for Pcg32Shift {
         else { b as f64 / a as f64 }
     }
 } 
+
+fn to_start_u32(x : Bound<&u32>) -> u32 {
+    match x {
+        Bound::Included(x) => *x,
+        Bound::Unbounded => 0,
+        Bound::Excluded(x) => *x + 1,
+    }
+}
+
+fn to_end_u32(x : Bound<&u32>) -> u32 {
+    match x {
+        Bound::Included(x) => *x,
+        Bound::Excluded(x) => *x - 1,
+        Bound::Unbounded => u32::MAX,
+    }
+}
+
+fn to_start_u64(x : Bound<&u64>) -> u64 {
+    match x {
+        Bound::Included(x) => *x,
+        Bound::Unbounded => 0,
+        Bound::Excluded(x) => *x + 1,
+    }
+}
+
+fn to_end_u64(x : Bound<&u64>) -> u64 {
+    match x {
+        Bound::Included(x) => *x,
+        Bound::Excluded(x) => *x - 1,
+        Bound::Unbounded => u64::MAX,
+    }
+}

@@ -1,3 +1,4 @@
 
 pub mod random;
-pub mod rng_algos;
+pub mod rng_algo;
+

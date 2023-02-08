@@ -69,6 +69,43 @@ impl RandomU32 for Pcg32Shift {
     }
 } 
 
+pub struct XorShift32 {
+    state : u32
+}
+
+impl XorShift32 {
+    pub fn new() -> Self {
+        XorShift32 { state: INIT as u32 }
+    }
+    pub fn seed(input : u32) -> Self {
+        XorShift32 { state : input | 1 }
+    }
+}
+
+impl RandomU32 for XorShift32 {
+    fn next(&mut self) -> u32 {
+        let mut t = self.state;
+        t ^= t << 11;
+        t ^= t >> 19;
+        t ^= t << 7;
+        t ^= t >> 17;
+        t ^= t << 3;
+        self.state = t;
+        return t;
+    }
+    fn range<R:RangeBounds<u32>>(&mut self, range : R) -> u32 {
+        let start = to_start_u32(range.start_bound()) as f64;
+        let end = to_end_u32(range.end_bound()) as f64;
+        (self.ratio() * (end + 1.0 - start) + start).floor() as u32 
+    }
+    fn ratio(&mut self) -> f64 {
+        let a = self.next();
+        let b = self.next();
+        if a < b { a as f64 / b as f64 }
+        else { b as f64 / a as f64 }
+    }
+} 
+
 fn to_start_u32(x : Bound<&u32>) -> u32 {
     match x {
         Bound::Included(x) => *x,

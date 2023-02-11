@@ -28,7 +28,7 @@ const PRIME_2 : u32 = 0xF08D8857;
 const PRIME_3 : u32 = 0x35A3B0C5;
 const PRIME_4 : u32 = 0x1E11CC53;
 const PRIME_5 : u32 = 0x6EBA8DF;
-const _PRIME_6 : u32 = 0x1586BB73;
+const PRIME_6 : u32 = 0x1586BB73;
 const _PRIME_7 : u32 = 0xB5D8B5A5;
 const _PRIME_8 : u32 = 0xAC5B5253;
 const _PRIME_9 : u32 = 0xBE648801;
@@ -98,7 +98,10 @@ impl NoiseFuncF32 for CCIndexF32 {
         }
 
         let input = input.into_iter()
-                         .map(|x| u32::from_be_bytes(x.to_be_bytes()))
+                         .map(|x| {
+                            if x.is_sign_positive() { u32::from_be_bytes(x.to_be_bytes()) } 
+                            else { u32::from_be_bytes(x.to_be_bytes()).wrapping_mul(PRIME_6) }
+                         })
                          .zip(DIM_PRIMES.into_iter())
                          .map(|(a, b)| a.wrapping_mul(b))
                          .fold(0u32, |tot, x| tot.wrapping_add(x));
@@ -113,7 +116,10 @@ impl NoiseFuncF32 for CCIndexF32 {
         }
 
         let input = input.into_iter()
-                         .map(|x| u32::from_be_bytes(x.to_be_bytes()))
+                         .map(|x| {
+                            if x.is_sign_positive() { u32::from_be_bytes(x.to_be_bytes()) } 
+                            else { u32::from_be_bytes(x.to_be_bytes()).wrapping_mul(PRIME_6) }
+                         })
                          .zip(DIM_PRIMES.into_iter())
                          .map(|(a, b)| a.wrapping_mul(b))
                          .fold(0u32, |tot, x| tot.wrapping_add(x));
